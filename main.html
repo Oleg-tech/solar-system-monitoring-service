@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Моніторинг СЕС</title>
+        <link rel="stylesheet" href="./style.css">
+    </head>
+    <body>
+        <header class="page-header">
+            Обчислення сумарної сонячної радіації
+        </header>
+
+        <div>
+        <div class="form-container">
+            <form id="solarCalculationData" action="" method="post">
+                <div class="column">
+                    <label for="latitude">Широта</label>
+                    <input type="number" name="latitude" />
+
+                    <label for="longitude">Довгота</label>
+                    <input type="number" name="longitude" />
+
+                    <label for="direct_solar_radiation">Значення прямої сонячної радіації</label>
+                    <input type="number" step="0.01" name="direct_solar_radiation" />
+
+                    <label for="scattered_solar_radiation">Значення розсіяної сонячної радіації</label>
+                    <input type="number" step="0.01" name="scattered_solar_radiation" />
+
+                    <label for="total_solar_radiation">Значення сумарної сонячної радіації</label>
+                    <input type="number" step="0.01" name="total_solar_radiation" />
+                </div>
+
+                <div class="column">
+                    <label for="date">Дата</label>
+                    <input type="date" name="date" />
+
+                    <label for="albedo">Альбедо земної поверхні, %</label>
+                    <input type="number" min="0" max="100" name="albedo" />
+
+                    <label for="betta">Кут нахилу панелі (Бетта)</label>
+                    <input name="betta" />
+
+                    <label for="gamma">Азимутальний кут розміщення (Гамма)</label>
+                    <input name="gamma" />
+                </div>
+                <button type="submit">Розрахувати</button>
+            </form>
+        </div>
+        
+        <div class="final-result">
+            Сумарна сонячна радіація:
+            <div id="resultDataTable">
+                
+            </div>
+        </div>
+
+        <script src="./calculate.js"></script>
+    </body>
+</html>
+
