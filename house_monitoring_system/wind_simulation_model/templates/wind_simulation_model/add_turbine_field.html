@@ -1,0 +1,90 @@
+{% extends 'wind_simulation_model/base.html' %}
+{% load static %}
+
+
+{% block header %}
+<header class="page-header">
+    Імітаційна модель
+</header>
+<nav class="navigation" align="center">
+    <a href="{% url 'wind_station_simulation_now' %}" class="nav-link" id="currentStatus">Станом на зараз</a>
+    <a href="{% url 'wind_station_simulation_forecast' %}" class="nav-link" id="forecast">Прогноз</a>
+    <a href="{% url 'list_of_turbines' %}" class="nav-link" id="turbines">Список ВЕУ</a>
+</nav>
+{% endblock %}
+
+{% block data %}
+<div align="center" style="font-size: 16px; font-weight: bold; padding: 10px;">
+    Додати параметр ВЕУ
+</div>
+
+<div class="form-container" style="width: 95%;" align="center">
+    <form class="getForecast" align="center" method="post">
+    {% csrf_token %}
+
+        <label for="windSpeed">Введіть швидкість вітру, м/с:</label>
+        <input type="number" name="windSpeed" class="windSpeed" />
+        <label for="capacity">Введіть потужність, кВт:</label>
+        <input type="number" name="capacity" class="capacity" />
+
+        <button type="submit">Зберегти</button>
+    </form>
+</div>
+
+<script>
+
+</script>
+
+<style>
+    .navigation {
+        background-color: #93D6EA;
+        padding: 20px;
+        text-decoration: none;
+    }
+
+    .nav-link {
+        padding: 20px;
+        text-decoration: none;
+        font-size: 16px;
+        margin-right: 10px;
+        color: #5B4D17;
+        font-weight: bold;
+    }
+
+        .form-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 25vh;
+    }
+
+    .getForecast {
+        text-align: center;
+        width: 300px;
+    }
+
+    .getForecast label {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .getForecast input,
+    .getForecast select {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        margin-bottom: 15px;
+    }
+
+    .getForecast button {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

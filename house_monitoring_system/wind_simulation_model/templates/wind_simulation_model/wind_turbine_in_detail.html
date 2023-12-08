@@ -1,0 +1,90 @@
+{% extends 'wind_simulation_model/base.html' %}
+{% load static %}
+
+
+{% block header %}
+<header class="page-header">
+    Імітаційна модель
+</header>
+<nav class="navigation" align="center">
+    <a href="{% url 'wind_station_simulation_now' %}" class="nav-link" id="currentStatus">Станом на зараз</a>
+    <a href="{% url 'wind_station_simulation_forecast' %}" class="nav-link" id="forecast">Прогноз</a>
+    <a href="{% url 'list_of_turbines' %}" class="nav-link" id="turbines">Список ВЕУ</a>
+</nav>
+{% endblock %}
+
+{% block data %}
+<div align="center" style="font-size: 16px; font-weight: bold; padding: 10px;">
+    Характеристика потужності {{ turbine_name }}
+</div>
+
+<div id="resultDataTable">
+    <table align="center">
+        <tr>
+            <th>Швидкість вітру, м/с</th>
+            <th>Потужність ВЕУ, кВт</th>
+        </tr>
+        {% for turbine in all_strings %}
+          <tr>
+                <td>{{ turbine.wind_speed }}</td>
+                <td>{{ turbine.power_output }}</td>
+          </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div align="center" style="padding-top: 10px;">
+    <a href="/wind_simulation/list_of_turbines/{{turbine_id}}/add">
+        <button>Додати нове поле</button>
+    </a>
+
+    <a href="/wind_simulation/list_of_turbines/{{turbine_id}}/edit">
+        <button>Редагувати таблицю</button>
+    </a>
+
+    <a href="/wind_simulation/list_of_turbines/{{turbine_id}}/delete">
+        <button>Видалити таблицю</button>
+    </a>
+</div>
+
+<script>
+
+</script>
+
+<style>
+    .navigation {
+        background-color: #93D6EA;
+        padding: 20px;
+        text-decoration: none;
+    }
+
+    .nav-link {
+        padding: 20px;
+        text-decoration: none;
+        font-size: 16px;
+        margin-right: 10px;
+        color: #5B4D17;
+        font-weight: bold;
+    }
+
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 70%;
+    }
+
+    td, th {
+      border: 1px solid black;
+      text-align: center;
+      padding: 8px;
+      max-width: 100px; /* Змініть це значення на те, яке вам потрібно */
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+</style>
+{% endblock %}
