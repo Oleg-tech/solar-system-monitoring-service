@@ -1,0 +1,174 @@
+{% extends 'wind_simulation_model/base.html' %}
+{% load static %}
+
+
+{% block header %}
+<header class="page-header">
+    Імітаційна модель
+</header>
+<nav class="navigation" align="center">
+    <a href="{% url 'wind_station_simulation_now' %}" class="nav-link" id="currentStatus">Станом на зараз</a>
+    <a href="{% url 'wind_station_simulation_forecast' %}" class="nav-link" id="forecast">Прогноз</a>
+    <a href="{% url 'list_of_turbines' %}" class="nav-link" id="turbines">Список ВЕУ</a>
+</nav>
+{% endblock %}
+
+{% block data %}
+<div class="form-container" style="width: 95%;" align="center">
+    <form class="getForecast" align="center">
+        {% csrf_token %}
+
+        <label for="city">Місто</label>
+        <input type="text" class="city" />
+
+        <label for="windTurbinesList">Виберіть турбіну</label>
+        <select class="windTurbinesList" id="windTurbinesList">
+            {% for turbine in list_of_turbines %}
+                <option value="{{ turbine }}">{{ turbine }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="date_1">Початкова дата</label>
+        <input type="date" class="date_1" min="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d', strtotime('+10 days')); ?>"/>
+
+        <label for="date_2">Кінцева дата</label>
+        <input type="date" class="date_2" min="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d', strtotime('+10 days')); ?>"/>
+
+        <button type="submit">Розрахувати</button>
+    </form>
+</div>
+
+    <div id="resultDataTable" align="center" style="font-size: 20px; font-weight: bold;">
+        Результати обчислення виробництва електроенергії для ВЕУ <span class="mainTurbineName"></span>: <span class="resultCapacity"></span>
+    </div>
+
+<script>
+    $(document).ready(function(){
+        $(".getForecast").submit(function(e){
+            e.preventDefault();
+
+            var inputCity = $('.city');
+            var inputDate1 = $('.date_1');
+            var inputDate2 = $('.date_2');
+            var inputTurbineName = $('#windTurbinesList');
+
+            $.ajax({
+                type:'POST',
+                url: '/get_all_forecast_data',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    'city': inputCity.val(),
+                    'turbine_name': inputTurbineName.val(),
+                    'date_1': inputDate1.val(),
+                    'date_2': inputDate2.val(),
+                },
+                success: function(response) {
+                    response.result_table.forEach(data => {
+                        let table = `
+                            <table align="center">
+                              <tr>
+                                <th>Дата</th>
+                                <td>${data.date}</td>
+                              </tr>
+                              <tr>
+                                <th>Час</th>
+                                <td>2:00 8:00 14:00 20:00</td>
+                              </tr>
+                            `;
+
+                          Object.keys(data).forEach(key => {
+                            if (key !== 'date') {
+                            let name = 'Температура';
+                                if (key == 'temperature') {
+                                    name = 'Температура';
+                                }
+                                else if (key == 'air_pressure') {
+                                    name = 'Тиск';
+                                }
+                                else if (key == 'wind_speed') {
+                                    name = 'Швидкість вітру';
+                                } else if (key == 'capacity'){
+                                    name = 'Виробництво';
+                                }
+                                console.log(name);
+                              table += `
+                                <tr>
+                                  <td>${name}</td>
+                                  <td>${data[key]}</td>
+                                </tr><br>
+                              `;
+                            }
+                          });
+
+                          table += '</table>';
+
+                          document.body.innerHTML += table;
+                    });
+
+                    $(".tableCity").text(response.city);
+                    $(".temperature").text(response.temperature);
+                    $(".airPressure").text(response.airPressure);
+                    $(".windSpeed").text(response.windSpeedText);
+                    $(".resultCapacity").text(response.total_capacity + ' кВт');
+                },
+                error: function(response){
+                    console.log('error');
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .navigation {
+        background-color: #93D6EA;
+        padding: 20px;
+        text-decoration: none;
+    }
+    .nav-link {
+        padding: 20px;
+        text-decoration: none;
+        font-size: 16px;
+        margin-right: 10px;
+        color: #5B4D17;
+        font-weight: bold;
+    }
+
+    .form-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 45vh;
+    }
+
+    .getForecast {
+        text-align: center;
+        width: 300px;
+    }
+
+    .getForecast label {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .getForecast input,
+    .getForecast select {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        margin-bottom: 15px;
+    }
+
+    .getForecast button {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

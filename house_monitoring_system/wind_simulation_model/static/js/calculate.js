@@ -1,12 +1,3 @@
-var citiesOfUkraine = {
-    'Київ': [50.43, 30.51],
-    'Євпаторія': [45.19, 33.37],
-    'Бориспіль': [50.35, 30.95],
-    'Вінниця': [49.23, 28.48],
-    'Житомир': [50.26]
-};
-
-
 function calculateTimeAngleOfSun(longitude, N) {
     // Визначимо поточний час в годинах
     var currentDate = new Date();

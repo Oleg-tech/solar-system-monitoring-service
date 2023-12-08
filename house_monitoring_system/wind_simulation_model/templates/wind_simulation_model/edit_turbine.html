@@ -1,0 +1,68 @@
+{% extends 'wind_simulation_model/base.html' %}
+{% load static %}
+
+
+{% block header %}
+<header class="page-header">
+    Імітаційна модель
+</header>
+<nav class="navigation" align="center">
+    <a href="{% url 'wind_station_simulation_now' %}" class="nav-link" id="currentStatus">Станом на зараз</a>
+    <a href="{% url 'wind_station_simulation_forecast' %}" class="nav-link" id="forecast">Прогноз</a>
+    <a href="{% url 'list_of_turbines' %}" class="nav-link" id="turbines">Список ВЕУ</a>
+</nav>
+{% endblock %}
+
+{% block data %}
+<div align="center" style="font-size: 16px; font-weight: bold; padding: 10px;">
+    Редагування характеристик
+</div>
+
+<div id="resultDataTable">
+    <table align="center">
+        <tr>
+            <th>Швидкість вітру, м/с</th>
+            <th>Потужність ВЕУ, кВт</th>
+            <th></th>
+        </tr>
+        {% for turbine in all_strings %}
+          <tr>
+                <td>{{ turbine.wind_speed }}</td>
+                <td>{{ turbine.power_output }}</td>
+                <td>
+                    <a href="/wind_simulation/list_of_turbines/{{turbine_id}}/edit/{{turbine.id}}">
+                        <button style="background-color: #F5E73B; color: black;">Редагувати</button>
+                    </a>
+
+                </td>
+                <td>
+                    <a href="#">
+                        <button class="deleteField" id="delete-{{turbine.id}}" style="background-color: #F53E3B; color: black;">Видалити</button>
+                    </a>
+                </td>
+          </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<script>
+
+</script>
+
+<style>
+    .navigation {
+        background-color: #93D6EA;
+        padding: 20px;
+        text-decoration: none;
+    }
+
+    .nav-link {
+        padding: 20px;
+        text-decoration: none;
+        font-size: 16px;
+        margin-right: 10px;
+        color: #5B4D17;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

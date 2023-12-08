@@ -1,0 +1,174 @@
+{% extends 'wind_simulation_model/base.html' %}
+{% load static %}
+
+
+{% block header %}
+<header class="page-header">
+    Імітаційна модель
+</header>
+<nav class="navigation" align="center">
+    <a href="{% url 'wind_station_simulation_now' %}" class="nav-link" id="currentStatus">Станом на зараз</a>
+    <a href="{% url 'wind_station_simulation_forecast' %}" class="nav-link" id="forecast">Прогноз</a>
+    <a href="{% url 'list_of_turbines' %}" class="nav-link" id="turbines">Список ВЕУ</a>
+</nav>
+{% endblock %}
+
+{% block data %}
+<div class="form-container" style="width: 95%;" align="center">
+    <form class="getForecast">
+        {% csrf_token %}
+        <label for="city">Введіть назву населеного пункту:</label>
+        <input type="text" class="city" />
+        <label for="windTurbinesList">Виберіть турбіну</label>
+        <select class="windTurbinesList" id="windTurbinesList">
+            {% for turbine in list_of_turbines %}
+                <option value="{{ turbine }}">{{ turbine }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Розрахувати</button>
+    </form>
+</div>
+
+<div class="final-result">
+    <div id="resultDataTable" align="center">
+        Результати обчислення виробництва електроенергії для ВЕУ <span class="mainTurbineName"></span>:
+        <table align="center">
+              <tr>
+                    <td>Місто</td>
+                    <td class="tableCity"></td>
+              </tr>
+              <tr>
+                    <td>Температура</td>
+                    <td class="temperature"></td>
+              </tr>
+              <tr>
+                    <td>Тиск</td>
+                    <td class="airPressure"></td>
+              </tr>
+              <tr>
+                    <td>Швидкість вітру</td>
+                    <td class="windSpeed"></td>
+              </tr>
+              <tr>
+                    <td>Кількість виробленої енергії</td>
+                    <td class="capacity"></td>
+              </tr>
+        </table>
+    </div>
+    <br>
+    <div align="center">
+        <span class="turbineName"></span>:
+        <div id="parametersTable">
+
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $(".getForecast").submit(function(e){
+            e.preventDefault();
+
+            var inputCity = $('.city');
+
+            $.ajax({
+                type:'POST',
+                url: '/get_forecast_data',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    'city': inputCity.val(),
+                    'turbine_name': $('#windTurbinesList').val(),
+                },
+                success: function(response) {
+                    $(".tableCity").text(response.city);
+                    $(".temperature").text(response.temperature + ' °C');
+                    $(".airPressure").text(response.airPressure + ' мм. рт. ст.');
+                    $(".windSpeed").text(response.windSpeedText);
+                    if (response.capacity == false) {
+                        $(".capacity").text('0 кВт');
+                    } else {
+                        $(".capacity").text(response.capacity + ' кВт');
+                    }
+                    $(".mainTurbineName").text(response.turbine_name);
+                    $(".turbineName").text('Характеристики ВЕУ ' + response.turbine_name);
+                    $("#parametersTable").html(response.parameters_table);
+                },
+                error: function(response){
+                    console.log('error');
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .navigation {
+        background-color: #93D6EA;
+        padding: 20px;
+        text-decoration: none;
+    }
+
+    .nav-link {
+        padding: 20px;
+        text-decoration: none;
+        font-size: 16px;
+        margin-right: 10px;
+        color: #5B4D17;
+        font-weight: bold;
+    }
+
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 70%;
+    }
+
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+
+    .form-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 25vh;
+    }
+
+    .getForecast {
+        text-align: center;
+        width: 300px;
+    }
+
+    .getForecast label {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .getForecast input,
+    .getForecast select {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        margin-bottom: 15px;
+    }
+
+    .getForecast button {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
