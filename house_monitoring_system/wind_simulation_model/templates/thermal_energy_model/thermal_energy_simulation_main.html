@@ -1,0 +1,66 @@
+{% extends 'thermal_energy_model/base.html' %}
+{% load static %}
+
+
+{% block header %}
+<header class="page-header">
+    Імітаційна модель обладнання
+</header>
+<nav class="navigation" align="center">
+    <a href="{% url 'thermal_energy_boiler' %}" class="nav-link" id="boiler">Котел</a>
+    <a href="{% url 'thermal_energy_cogeneration_plant' %}" class="nav-link" id="cogeneration_plant">Когенераційна установка</a>
+    <a href="{% url 'thermal_energy_heat_pump' %}" class="nav-link" id="heat_pump">Тепловий насос</a>
+    <a href="{% url 'thermal_energy_regenerative_heat_exchanger' %}" class="nav-link" id="regenerative_heat_exchanger">Рекуперативний теплообмінник</a>
+</nav>
+{% endblock %}
+
+{% block data %}
+
+
+<script>
+    $(document).ready(function(){
+        $(".getForecast").submit(function(e){
+            e.preventDefault();
+
+            var inputCity = $('.city');
+
+            $.ajax({
+                type:'POST',
+                url: '/get_forecast_data',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    'city': inputCity.val(),
+                },
+                success: function(response) {
+                    console.log(response);
+                    $(".tableCity").text(response.city);
+                    $(".temperature").text(response.temperature);
+                    $(".airPressure").text(response.airPressure);
+                    $(".windSpeed").text(response.windSpeedText);
+                    $(".capacity").text(response.capacity);
+                },
+                error: function(response){
+                    console.log('error');
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .navigation {
+        background-color: #93D6EA;
+        padding: 20px;
+        text-decoration: none;
+    }
+    .nav-link {
+        padding: 20px;
+        text-decoration: none;
+        font-size: 16px;
+        margin-right: 10px;
+        color: #5B4D17;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

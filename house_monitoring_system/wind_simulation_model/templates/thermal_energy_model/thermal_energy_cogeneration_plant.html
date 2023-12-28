@@ -1,0 +1,157 @@
+{% extends 'wind_simulation_model/base.html' %}
+{% load static %}
+
+
+{% block header %}
+<header class="page-header">
+    Імітаційна модель обладнання
+</header>
+<nav class="navigation" align="center">
+    <a href="{% url 'thermal_energy_boiler' %}" class="nav-link" id="boiler">Котел</a>
+    <a href="{% url 'thermal_energy_cogeneration_plant' %}" class="nav-link" id="cogeneration_plant">Когенераційна установка</a>
+    <a href="{% url 'thermal_energy_heat_pump' %}" class="nav-link" id="heat_pump">Тепловий насос</a>
+    <a href="{% url 'thermal_energy_regenerative_heat_exchanger' %}" class="nav-link" id="regenerative_heat_exchanger">Рекуперативний теплообмінник</a>
+</nav>
+{% endblock %}
+
+{% block data %}
+<div class="form-container" style="width: 95%; height: 50%;" align="center">
+    <form class="getForecast">
+        {% csrf_token %}
+        <label for="fuel_consumption">Витрати палива протягом години:</label>
+        <input type="text" class="fuel_consumption" />
+
+        <label for="fuel_type">Тип палива:</label>
+        <select class="fuel_type" id="fuel_type">
+            <option value="natural_gas">Природний газ</option>
+            <option value="coal">Вугілля</option>
+            <option value="wooden_pallets">Палети з деревини</option>
+            <option value="diesel_fuel">Дизельне паливо</option>
+        </select>
+
+        <label for="electrical_efficiency">Електричне ККД когенераційної установки:</label>
+        <input type="text" class="electrical_efficiency" name="electrical_efficiency"/>
+
+        <label for="thermal_efficiency">Теплове ККД когенераційної установки:</label>
+        <input type="text" class="thermal_efficiency" name="thermal_efficiency"/>
+
+        <label for="coolant_consumption">Витрати теплоносія в системі опалення:</label>
+        <input type="text" class="coolant_consumption" />
+
+        <label for="coolant_temperature">Температура теплоносія на вході в когенераційну установку:</label>
+        <input type="text" class="coolant_temperature" />
+
+        <button type="submit">Розрахувати</button>
+    </form>
+</div>
+
+<div class="final-result">
+    <div id="result_efficiency_electric"></div>
+    <div id="result_efficiency_thermal"></div>
+    <div id="result_temperature"></div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $(".getForecast").submit(function(e){
+            e.preventDefault();
+
+            var input_coolant_consumption = $('.coolant_consumption');
+            var input_coolant_temperature = $('.coolant_temperature');
+            var input_fuel_consumption = $('.fuel_consumption');
+
+            $.ajax({
+                type:'POST',
+                url: '/get_cogeneration_plant_calculations',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    'fuel_consumption': input_fuel_consumption.val(),
+                    'electrical_efficiency': $('input[name="electrical_efficiency"]').val(),
+                    'thermal_efficiency': $('input[name="thermal_efficiency"]').val(),
+                    'coolant_consumption': input_coolant_consumption.val(),
+                    'coolant_temperature': input_coolant_temperature.val(),
+                    'fuel_type': $('#fuel_type').val(),
+                },
+                success: function(response) {
+                    $("#result_efficiency_electric").html('Електрична потужність коогераційної установки = ' + response.nkgu + 'кВт');
+                    $("#result_efficiency_thermal").html('Теплова потужність коогераційної установки = ' + response.qkgu + 'кВт');
+                    $("#result_temperature").html('Температура теплоносія після нагріву в коогераційній установці = ' + response.tout + ' °C');
+                },
+                error: function(response){
+                    console.log('error');
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .navigation {
+        background-color: #93D6EA;
+        padding: 20px;
+        text-decoration: none;
+    }
+
+    .nav-link {
+        padding: 20px;
+        text-decoration: none;
+        font-size: 16px;
+        margin-right: 10px;
+        color: #5B4D17;
+        font-weight: bold;
+    }
+
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 70%;
+    }
+
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+
+    .form-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 25vh;
+    }
+
+    .getForecast {
+        text-align: center;
+        width: 300px;
+    }
+
+    .getForecast label {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .getForecast input,
+    .getForecast select {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        margin-bottom: 15px;
+    }
+
+    .getForecast button {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

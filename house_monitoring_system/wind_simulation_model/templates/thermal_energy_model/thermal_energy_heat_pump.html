@@ -1,0 +1,142 @@
+{% extends 'wind_simulation_model/base.html' %}
+{% load static %}
+
+
+{% block header %}
+<header class="page-header">
+    Імітаційна модель обладнання
+</header>
+<nav class="navigation" align="center">
+    <a href="{% url 'thermal_energy_boiler' %}" class="nav-link" id="boiler">Котел</a>
+    <a href="{% url 'thermal_energy_cogeneration_plant' %}" class="nav-link" id="cogeneration_plant">Когенераційна установка</a>
+    <a href="{% url 'thermal_energy_heat_pump' %}" class="nav-link" id="heat_pump">Тепловий насос</a>
+    <a href="{% url 'thermal_energy_regenerative_heat_exchanger' %}" class="nav-link" id="regenerative_heat_exchanger">Рекуперативний теплообмінник</a>
+</nav>
+{% endblock %}
+
+{% block data %}
+<div class="form-container" style="width: 95%; height: 50%;" align="center">
+    <form class="getForecast">
+        {% csrf_token %}
+        <label for="electric_power">Електрична потужність теплового насосу:</label>
+        <input type="text" class="electric_power" name="electric_power"/>
+
+        <label for="transformation_coefficient">Коефіцієнт трансформації:</label>
+        <input type="text" class="transformation_coefficient" name="transformation_coefficient"/>
+
+        <label for="city">Місто:</label>
+        <input type="text" class="city" name="city"/>
+
+        <label for="heat_carrier_costs">Витрати теплоносія в системі опалення:</label>
+        <input type="text" class="heat_carrier_costs" name="heat_carrier_costs"/>
+
+        <label for="coolant_temperature">Температура теплоносія на вході в теплообмінник:</label>
+        <input type="text" class="coolant_temperature" name="coolant_temperature"/>
+
+        <button type="submit">Розрахувати</button>
+    </form>
+</div>
+
+<div class="final-result">
+    <div id="result_efficiency"></div>
+    <div id="result_temperature"></div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $(".getForecast").submit(function(e){
+            e.preventDefault();
+
+            $.ajax({
+                type:'POST',
+                url: '/get_heat_pump_calculations',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    'city': $('input[name=city]').val(),
+                    'electric_power': $('input[name=electric_power]').val(),
+                    'transformation_coefficient': $('input[name=transformation_coefficient]').val(),
+                    'heat_carrier_costs': $('input[name=heat_carrier_costs]').val(),
+                    'coolant_temperature': $('input[name=coolant_temperature]').val(),
+                },
+                success: function(response) {
+                    $("#result_efficiency").html('Теплова потужність теплового насосу = ' + response.qtn + ' кВт');
+                    $("#result_temperature").html('Температура теплоносія після нагріву в теплообміннику теплового насосу = ' + response.tout + ' °C');
+                },
+                error: function(response){
+                    console.log('error');
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .navigation {
+        background-color: #93D6EA;
+        padding: 20px;
+        text-decoration: none;
+    }
+
+    .nav-link {
+        padding: 20px;
+        text-decoration: none;
+        font-size: 16px;
+        margin-right: 10px;
+        color: #5B4D17;
+        font-weight: bold;
+    }
+
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 70%;
+    }
+
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+
+    .form-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 25vh;
+    }
+
+    .getForecast {
+        text-align: center;
+        width: 300px;
+    }
+
+    .getForecast label {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .getForecast input,
+    .getForecast select {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        margin-bottom: 15px;
+    }
+
+    .getForecast button {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

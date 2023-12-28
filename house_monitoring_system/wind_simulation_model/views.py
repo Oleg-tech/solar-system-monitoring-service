@@ -260,5 +260,156 @@ def get_all_forecast_data(request):
     data['result_table'] = result[0]
     data['total_capacity'] = result[1]
 
-    print(data)
+    return JsonResponse(data)
+
+
+def thermal_energy_simulation_main(request):
+    return render(
+        request=request,
+        template_name='thermal_energy_model/thermal_energy_simulation_main.html'
+    )
+
+
+def thermal_energy_boiler(request):
+    return render(
+        request=request,
+        template_name='thermal_energy_model/thermal_energy_boiler.html'
+    )
+
+
+def thermal_energy_cogeneration_plant(request):
+    return render(
+        request=request,
+        template_name='thermal_energy_model/thermal_energy_cogeneration_plant.html'
+    )
+
+
+def thermal_energy_heat_pump(request):
+    return render(
+        request=request,
+        template_name='thermal_energy_model/thermal_energy_heat_pump.html'
+    )
+
+
+def thermal_energy_regenerative_heat_exchanger(request):
+    return render(
+        request=request,
+        template_name='thermal_energy_model/thermal_energy_regenerative_heat_exchanger.html'
+    )
+
+
+def get_boiler_calculations(request):
+    fuel_consumption = request.POST['fuel_consumption']
+    fuel_type = request.POST['fuel_type']
+    boiler_efficiency = request.POST['boiler_efficiency']
+    coolant_consumption = request.POST['coolant_consumption']
+    coolant_temperature = request.POST['coolant_temperature']
+
+    print(fuel_consumption, fuel_type, boiler_efficiency, coolant_consumption, coolant_temperature)
+
+    fuel_energy = {
+        'natural_gas': 9.5,
+        'coal': 7,
+        'wooden_pallets': 4.2,
+        'diesel_fuel': 12
+    }
+
+    qk = float(fuel_consumption) * float(fuel_energy[fuel_type]) * float(boiler_efficiency) / 100
+    tout = float(coolant_temperature) + (3600 * qk) / (4.187 * float(coolant_consumption))
+
+    print(qk)
+    print(tout)
+    data = {
+        'qk': "{:.2f}".format(qk),
+        'tout': "{:.2f}".format(tout)
+    }
+
+    return JsonResponse(data)
+
+
+def get_cogeneration_plant_calculations(request):
+    fuel_consumption = request.POST['fuel_consumption']
+    fuel_type = request.POST['fuel_type']
+    electrical_efficiency = request.POST['electrical_efficiency']
+    thermal_efficiency = request.POST['thermal_efficiency']
+    coolant_consumption = request.POST['coolant_consumption']
+    coolant_temperature = request.POST['coolant_temperature']
+
+    print(fuel_consumption, fuel_type, electrical_efficiency, thermal_efficiency, coolant_consumption, coolant_temperature)
+
+    fuel_energy = {
+        'natural_gas': 9.5,
+        'coal': 7,
+        'wooden_pallets': 4.2,
+        'diesel_fuel': 12
+    }
+
+    nkgu = float(fuel_consumption) * float(fuel_energy[fuel_type]) * float(electrical_efficiency) / 100
+    qkgu = float(fuel_consumption) * float(fuel_energy[fuel_type]) * float(thermal_efficiency) / 100
+
+    print(nkgu)
+    print(qkgu)
+
+    tout = float(coolant_temperature) + (3600 * qkgu) / (4.187 * float(coolant_consumption))
+
+    print(tout)
+
+    data = {
+        'nkgu': "{:.2f}".format(nkgu),
+        'qkgu': "{:.2f}".format(qkgu),
+        'tout': "{:.2f}".format(tout)
+    }
+
+    return JsonResponse(data)
+
+
+def get_heat_pump_calculations(request):
+    city = request.POST['city']
+    electric_power = request.POST['electric_power']
+    transformation_coefficient = request.POST['transformation_coefficient']
+    heat_carrier_costs = request.POST['heat_carrier_costs']
+    coolant_temperature = request.POST['coolant_temperature']
+
+    temperature = get_local_data(city)['temperature']
+
+    qtn = float(electric_power) * float(transformation_coefficient)
+    tout = float(coolant_temperature) + (3600 * qtn) / (4.187 * float(heat_carrier_costs))
+
+    print(qtn)
+
+    data = {
+        'qtn': "{:.2f}".format(qtn),
+        'tout': "{:.2f}".format(tout)
+    }
+
+    return JsonResponse(data)
+
+
+def get_regenerative_heat_exchanger_calculations(request):
+    city = request.POST['city']
+    people_number = request.POST['people_number']
+    normative_air_exchange = request.POST['normative_air_exchange']
+    efficiency = request.POST['efficiency']
+    temperature_in_house = request.POST['temperature_in_house']
+
+    temperature = get_local_data(city)['temperature']
+
+    vpov = int(people_number) * float(normative_air_exchange)
+
+    qpov = 1 * (float(temperature_in_house) - float(temperature)) * vpov
+    qreq = qpov * float(efficiency) / 100
+
+    qnagr = qpov - qreq
+
+    print(vpov)
+    print(qpov)
+    print(qreq)
+    print(qnagr)
+
+    data = {
+        'vpov': "{:.2f}".format(vpov),
+        'qpov': "{:.2f}".format(qpov),
+        'qnagr': "{:.2f}".format(qnagr)
+    }
+
     return JsonResponse(data)

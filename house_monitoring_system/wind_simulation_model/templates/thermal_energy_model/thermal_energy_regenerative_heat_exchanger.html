@@ -1,0 +1,146 @@
+{% extends 'wind_simulation_model/base.html' %}
+{% load static %}
+
+
+{% block header %}
+<header class="page-header">
+    Імітаційна модель обладнання
+</header>
+<nav class="navigation" align="center">
+    <a href="{% url 'thermal_energy_boiler' %}" class="nav-link" id="boiler">Котел</a>
+    <a href="{% url 'thermal_energy_cogeneration_plant' %}" class="nav-link" id="cogeneration_plant">Когенераційна установка</a>
+    <a href="{% url 'thermal_energy_heat_pump' %}" class="nav-link" id="heat_pump">Тепловий насос</a>
+    <a href="{% url 'thermal_energy_regenerative_heat_exchanger' %}" class="nav-link" id="regenerative_heat_exchanger">Рекуперативний теплообмінник</a>
+</nav>
+{% endblock %}
+
+{% block data %}
+<div class="form-container" style="width: 95%; height: 50%;" align="center">
+    <form class="getForecast">
+        {% csrf_token %}
+        <label for="people_number">Кількість людей, що проживає в помешканні:</label>
+        <input type="text" class="people_number" name="people_number"/>
+
+        <label for="normative_air_exchange">Нормативний повітряобмін на одну людину м3/год:</label>
+        <input type="text" class="normative_air_exchange" name="normative_air_exchange"/>
+
+        <label for="efficiency">ККД рекуператора:</label>
+        <input type="text" class="efficiency" name="efficiency"/>
+
+        <label for="temperature_in_house">Температура в приміщенні:</label>
+        <input type="text" class="temperature_in_house" name="temperature_in_house"/>
+
+        <label for="city">Введіть назву населеного пункту:</label>
+        <input type="text" class="city" name="city"/>
+
+        <button type="submit">Розрахувати</button>
+    </form>
+</div>
+
+<div class="final-result">
+    <div id="result_1"></div>
+    <div id="result_2"></div>
+    <div id="result_3"></div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $(".getForecast").submit(function(e){
+            e.preventDefault();
+
+            var inputCity = $('.city');
+
+            $.ajax({
+                type:'POST',
+                url: '/get_regenerative_heat_exchanger_calculations',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    'city': $('input[name=city]').val(),
+                    'people_number': $('input[name=people_number]').val(),
+                    'normative_air_exchange': $('input[name=normative_air_exchange]').val(),
+                    'efficiency': $('input[name=efficiency]').val(),
+                    'temperature_in_house': $('input[name=temperature_in_house]').val(),
+                },
+                success: function(response) {
+                    $("#result_1").html('Нормативний повітряобмін помешкання = ' + response.vpov + ' м3/год');
+                    $("#result_2").html('Теплова потужність рекуператора = ' + response.qpov + ' кВт');
+                    $("#result_3").html('Зменшення споживання теплової енергії на підігрів повітря = ' + response.qnagr + ' кВт');
+                },
+                error: function(response){
+                    console.log('error');
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .navigation {
+        background-color: #93D6EA;
+        padding: 20px;
+        text-decoration: none;
+    }
+
+    .nav-link {
+        padding: 20px;
+        text-decoration: none;
+        font-size: 16px;
+        margin-right: 10px;
+        color: #5B4D17;
+        font-weight: bold;
+    }
+
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 70%;
+    }
+
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+
+    .form-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 25vh;
+    }
+
+    .getForecast {
+        text-align: center;
+        width: 300px;
+    }
+
+    .getForecast label {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .getForecast input,
+    .getForecast select {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        margin-bottom: 15px;
+    }
+
+    .getForecast button {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
